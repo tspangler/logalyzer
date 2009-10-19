@@ -78,7 +78,7 @@ class Logalyzer {
 
 		//	TODO: Parse out read settings that earlier versions put all on one line
 		if(!($this->is_new_eac())) {
-			//	Parse $read_matches as if everything were one line
+			//	Parse as if everything were one line
 		}
 		
 		return $rip_settings;

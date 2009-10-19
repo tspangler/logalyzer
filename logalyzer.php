@@ -63,24 +63,22 @@ class Logalyzer {
 	}
 	
 	function get_rip_settings() {
-		/*
-			1.	Determine EAC version
-				1a.	If < .99, get the next x lines after "Used drive"
-				1b.	If > .99, get even more lines.
-		*/
+		//	In one regex, we can get all of the drive's settings
+		$rip = preg_match_all('/(.+)\s+:\s(.+)/', $this->logfile_whole, $rip_settings);
 
-		//	Some things are the same in both logs - the used drive line, for example
-		//	The regex grabs everything between "Used drive:" and "Adapter"
-		$used_drive = preg_match('/Used drive\s+:\s(?<drive>.+)\sAdapter/', $this->logfile_whole, $drive_matches);
-		$rip_settings['drive'] = trim($drive_matches['drive']);
+		//	Clean up the arrays generated...
+		//	Get rid of the first array in the matches array
+		array_shift($rip_settings);
 
-		//	Read info: In old EAC, this has everything on one line
-		$read_info = preg_match('/Read mode\s+:\s(?<readmode>.+)/', $this->logfile_whole, $read_matches);
+		//	Trim all three arrays
+		for($x = 0; $x < sizeof($rip_settings); $x++) {
+			$rip_settings[$x] = array_map('trim', $rip_settings[$x]);
+		}
 
+
+		//	TODO: Parse out read settings that earlier versions put all on one line
 		if(!($this->is_new_eac())) {
 			//	Parse $read_matches as if everything were one line
-		} else {
-			//	Do a few more preg_match()es to get the rest of the read settings
 		}
 		
 		return $rip_settings;

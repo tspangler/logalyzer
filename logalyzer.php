@@ -97,6 +97,32 @@ class Logalyzer {
 		return array_map('trim', $matches);
 	}
 	
+	function get_track_crcs() {
+		//	Returns an array of track numbers, test CRCs, copy CRCs and bool true if they match
+		$tracks = preg_match_all('/Track\s+(?<trackno>[0-9]+)[\S\s]+?Test CRC (?<test_crc>[A-F0-9]+)[\s]+?Copy CRC (?<copy_crc>[A-F0-9]+)/', $this->logfile_whole, $all_matches);
+		
+		if(!($tracks)) {
+			return false;
+		}	
+		
+		//	Assemble the array
+		//	Assemble the results array
+		for($c = 0; $c < sizeof($all_matches['trackno']); $c++) {
+			$track_data['trackno'][$c] = $all_matches['trackno'][$c];
+			$track_data['test_crc'][$c] = $all_matches['test_crc'][$c];
+			$track_data['copy_crc'][$c] = $all_matches['copy_crc'][$c];
+
+			if($all_matches['test_crc'][$c] === $all_matches['copy_crc'][$c]) {
+				$track_data['ok'][$c] = true;
+			} else {
+				$track_data['ok'][$c] = false;
+			}
+
+		}
+		
+		return $track_data;
+	}
+	
 	function get_logfile_path() {
 		return $this->logfile;
 	}	

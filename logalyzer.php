@@ -74,30 +74,43 @@ class Logalyzer {
 		for($x = 0; $x < sizeof($rip_settings); $x++) {
 			$rip_settings[$x] = array_map('trim', $rip_settings[$x]);
 		}
-
+		
+		//	First, the settings that don't depend on version
+		$settings['drive'] = $rip_settings[1][0];
 
 		if(!($this->is_new_eac())) {
 			//	Parse as if everything were one line
 			$read_settings = explode(',', $rip_settings[1][1]);
 			
 			//	Now we've got the read settings, so put them in the array
-			$rip_settings[1]['read_mode'] = $read_settings[0];
-			$rip_settings[1]['accurate_stream'] = trim($read_settings[1]);
-			$rip_settings[1]['disable_cache'] = trim($read_settings[2]);
+			$settings['read_mode'] = $read_settings[0];
+			
+			//	Look only for the string "Secure." If we match just 'Secure' it will fail due to C2 data
+			if(false !== strpos($settings['read_mode'], 'Secure')) {
+				$settings['accurate_stream'] = trim($read_settings[1]);
+				$settings['disable_cache'] = trim($read_settings[2]);
 
-			//	TODO:	What about C2 on or off?
+				//	TODO:	What about C2 on or off?
+			}
+
+			$settings['offset'] = $rip_settings[1][2];
+
+		} else {
+			$settings['read_mode'] = $rip_settings[1][1];
+				
+			//	If secure mode, check for accurate stream, caching and C2
+			if($settings['read_mode'] == 'Secure') {
+				$settings['accurate_stream'] = $rip_settings[1][2];
+				$settings['disable_cache'] = $rip_settings[1][3];
+				$settings['c2'] = $rip_settings[1][4];
+				$settings['offset'] = $rip_settings[1][5];
+			} else {
+				$settings['offset'] = $rip_settings[1][2];
+			}
 			
 		}
 		
-		/*	TODO: Now we have a choice to make - in order to keep this language-independent, we can't
-			parse based on any string values. So should we assume that $rip_settings[1][1] is always
-			the data for "Read mode," even if it doesn't say so in English?
-			
-			Could this lead to stability problems?
-		*/
-		
-		
-		return $rip_settings;
+		return $settings;
 	}
 	
 	function get_album_info() {

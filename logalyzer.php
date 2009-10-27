@@ -76,10 +76,26 @@ class Logalyzer {
 		}
 
 
-		//	TODO: Parse out read settings that earlier versions put all on one line
 		if(!($this->is_new_eac())) {
 			//	Parse as if everything were one line
+			$read_settings = explode(',', $rip_settings[1][1]);
+			
+			//	Now we've got the read settings, so put them in the array
+			$rip_settings[1]['read_mode'] = $read_settings[0];
+			$rip_settings[1]['accurate_stream'] = trim($read_settings[1]);
+			$rip_settings[1]['disable_cache'] = trim($read_settings[2]);
+
+			//	TODO:	What about C2 on or off?
+			
 		}
+		
+		/*	TODO: Now we have a choice to make - in order to keep this language-independent, we can't
+			parse based on any string values. So should we assume that $rip_settings[1][1] is always
+			the data for "Read mode," even if it doesn't say so in English?
+			
+			Could this lead to stability problems?
+		*/
+		
 		
 		return $rip_settings;
 	}
@@ -105,26 +121,34 @@ class Logalyzer {
 			return false;
 		}	
 		
-		//	Assemble the array
 		//	Assemble the results array
 		for($c = 0; $c < sizeof($all_matches['trackno']); $c++) {
-			$track_data['trackno'][$c] = $all_matches['trackno'][$c];
-			$track_data['test_crc'][$c] = $all_matches['test_crc'][$c];
-			$track_data['copy_crc'][$c] = $all_matches['copy_crc'][$c];
+			$track_data[$c]['trackno'] = $all_matches['trackno'][$c];
+			$track_data[$c]['test_crc'] = $all_matches['test_crc'][$c];
+			$track_data[$c]['copy_crc'] = $all_matches['copy_crc'][$c];
 
 			if($all_matches['test_crc'][$c] === $all_matches['copy_crc'][$c]) {
-				$track_data['ok'][$c] = true;
+				$track_data[$c]['ok'] = true;
 			} else {
-				$track_data['ok'][$c] = false;
+				$track_data[$c]['ok'] = false;
 			}
 
 		}
-		
+				
 		return $track_data;
 	}
 	
 	function get_logfile_path() {
 		return $this->logfile;
-	}	
+	}
+	
+	function score_rip() {
+		/*	Computes an accuracy score for a rip out of 100
+			This is not weighted; it's a percentage based on the number of problems.
+			
+			So, ripping in burst with no offset correction = 2 problems out of 10 possible problems
+			=	80% score. Should also return an array with plaintext representations of the problem(s).
+		*/
+	}
 }	
 ?>
